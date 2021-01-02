@@ -9,8 +9,10 @@ class TweetsController < ApplicationController
     session = Session.find_by(token: token)
     user = session.user
     @tweet = user.tweets.new(tweet_params)
+    puts user.email.inspect
 
     if @tweet.save
+      TweetMailer.notify(@tweet).deliver! # invoke TweetMailer to send out the email when a tweet is successfully posted
       render 'tweets/create'
     end
   end
@@ -37,7 +39,6 @@ class TweetsController < ApplicationController
 
   def index_by_user
     user = User.find_by(username: params[:username])
-
     if user
       @tweets = user.tweets
       render 'tweets/index'
@@ -47,6 +48,6 @@ class TweetsController < ApplicationController
   private
 
     def tweet_params
-      params.require(:tweet).permit(:message)
+      params.require(:tweet).permit(:message, :image)
     end
 end
